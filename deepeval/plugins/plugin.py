@@ -20,7 +20,7 @@ def pytest_sessionstart(session: pytest.Session):
     is_running_deepeval = get_is_running_deepeval()
     identifier = session.config.getoption("identifier", None)
 
-    if is_running_deepeval:
+    if is_running_deepeval and os.getenv("DEEPEVAL_INITIALIZE_SAVE_TEST_RUN", "1") == "1":
         global_test_run_manager.save_to_disk = True
         global_test_run_manager.create_test_run(
             identifier=identifier,
