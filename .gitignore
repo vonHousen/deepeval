@@ -167,6 +167,9 @@ node_modules
 .vector_db
 */cache
 
+# VS Code
+.vscode/
+
 # deepeval tests
 secrets
 
