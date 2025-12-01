@@ -521,7 +521,7 @@ class TestRunManager:
                 pass
 
     def save_final_test_run_link(self, link: str):
-        if portalocker:
+        if portalocker and self.save_to_disk:
             try:
                 with portalocker.Lock(
                     LATEST_TEST_RUN_FILE_PATH, mode="w"
@@ -938,6 +938,8 @@ class TestRunManager:
         return link, res.id
 
     def save_test_run_locally(self):
+        if not self.save_to_disk:
+            return
         local_folder = os.getenv("DEEPEVAL_RESULTS_FOLDER")
         if local_folder:
             new_test_filename = datetime.datetime.now().strftime(
@@ -966,23 +968,26 @@ class TestRunManager:
         test_run = self.get_test_run()
         if test_run is None:
             print("Test Run is empty, please try again.")
-            delete_file_if_exists(self.temp_file_path)
+            if self.save_to_disk:
+                delete_file_if_exists(self.temp_file_path)
             return
         elif (
             len(test_run.test_cases) == 0
             and len(test_run.conversational_test_cases) == 0
         ):
             print("No test cases found, please try again.")
-            delete_file_if_exists(self.temp_file_path)
+            if self.save_to_disk:
+                delete_file_if_exists(self.temp_file_path)
             return
 
         valid_scores = test_run.construct_metrics_scores()
         if valid_scores == 0:
             print("All metrics errored for all test cases, please try again.")
-            delete_file_if_exists(self.temp_file_path)
-            delete_file_if_exists(
-                global_test_run_cache_manager.temp_cache_file_name
-            )
+            if self.save_to_disk:
+                delete_file_if_exists(self.temp_file_path)
+                delete_file_if_exists(
+                    global_test_run_cache_manager.temp_cache_file_name
+                )
             return
         test_run.run_duration = runDuration
         test_run.calculate_test_passes_and_fails()
@@ -1015,7 +1020,8 @@ class TestRunManager:
                 self._render_prompts_panels(prompts=test_run.prompts)
 
         self.save_test_run_locally()
-        delete_file_if_exists(self.temp_file_path)
+        if self.save_to_disk:
+            delete_file_if_exists(self.temp_file_path)
         if is_confident() and self.disable_request is False:
             return self.post_test_run(test_run)
         else:
@@ -1033,6 +1039,8 @@ class TestRunManager:
             )
 
     def get_latest_test_run_data(self) -> Optional[TestRun]:
+        if not self.save_to_disk:
+            return None
         try:
             if os.path.exists(LATEST_TEST_RUN_FILE_PATH):
                 with open(LATEST_TEST_RUN_FILE_PATH, "r") as file:
@@ -1045,6 +1053,8 @@ class TestRunManager:
         return None
 
     def get_latest_test_run_link(self) -> Optional[str]:
+        if not self.save_to_disk:
+            return None
         try:
             if os.path.exists(LATEST_TEST_RUN_FILE_PATH):
                 with open(LATEST_TEST_RUN_FILE_PATH, "r") as file:

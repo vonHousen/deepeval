@@ -272,9 +272,7 @@ class TestRunCacheManager:
             return
 
         if self.disable_write_cache:
-            # Clear cache if write cache is disabled
-            delete_file_if_exists(self.cache_file_name)
-            delete_file_if_exists(self.temp_cache_file_name)
+            # Skip all file I/O when cache is disabled
             return
 
         self.get_cached_test_run(from_temp=True)
