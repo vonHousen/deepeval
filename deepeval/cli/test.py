@@ -159,8 +159,6 @@ def run(
     if identifier:
         pytest_args.extend(["--identifier", identifier])
 
-    # Add the deepeval plugin file to pytest arguments
-    pytest_args.extend(["-p", "plugins"])
     # Append the extra arguments collected by allow_extra_args=True
     # Pytest will raise its own error if the arguments are invalid (error:
     if ctx.args:
